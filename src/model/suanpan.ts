@@ -25,6 +25,11 @@ export interface SuanpanState {
   readonly rods: readonly SuanpanRod[];
 }
 
+export interface ActiveBeadCounts {
+  readonly heaven: number;
+  readonly earth: number;
+}
+
 export function validateRodCount(rodCount: number): number {
   if (!Number.isInteger(rodCount)) {
     throw new RangeError('Rod count must be an integer.');
@@ -65,6 +70,31 @@ export function createNeutralRod(index: number): SuanpanRod {
   };
 }
 
+export function setRodBeadCounts(
+  state: SuanpanState,
+  rodIndex: number,
+  counts: ActiveBeadCounts,
+): SuanpanState {
+  validateRodIndex(state, rodIndex);
+  validateActiveBeadCount(counts.heaven, 'heaven', HEAVEN_BEADS_PER_ROD);
+  validateActiveBeadCount(counts.earth, 'earth', EARTH_BEADS_PER_ROD);
+
+  return {
+    ...state,
+    rods: state.rods.map((rod, index) =>
+      index === rodIndex ? setRodActiveCounts(rod, counts) : rod,
+    ),
+  };
+}
+
+export function clearRod(state: SuanpanState, rodIndex: number): SuanpanState {
+  return setRodBeadCounts(state, rodIndex, { heaven: 0, earth: 0 });
+}
+
+export function clearSuanpanState(state: SuanpanState): SuanpanState {
+  return createNeutralSuanpanState(state.rodCount);
+}
+
 export function isNeutralRod(rod: SuanpanRod): boolean {
   return [...rod.heaven, ...rod.earth].every((bead) => !bead.isActive);
 }
@@ -83,5 +113,58 @@ function createNeutralBeads(
     deck,
     index,
     isActive: false,
+  }));
+}
+
+function validateRodIndex(state: SuanpanState, rodIndex: number): number {
+  if (!Number.isInteger(rodIndex)) {
+    throw new RangeError('Rod index must be an integer.');
+  }
+
+  if (rodIndex < 0 || rodIndex >= state.rods.length) {
+    throw new RangeError(
+      `Rod index must be between 0 and ${state.rods.length - 1}.`,
+    );
+  }
+
+  return rodIndex;
+}
+
+function validateActiveBeadCount(
+  beadCount: number,
+  deck: BeadDeck,
+  maxBeadCount: number,
+): number {
+  if (!Number.isInteger(beadCount)) {
+    throw new RangeError(`${deck} bead count must be an integer.`);
+  }
+
+  if (beadCount < 0 || beadCount > maxBeadCount) {
+    throw new RangeError(
+      `${deck} bead count must be between 0 and ${maxBeadCount}.`,
+    );
+  }
+
+  return beadCount;
+}
+
+function setRodActiveCounts(
+  rod: SuanpanRod,
+  counts: ActiveBeadCounts,
+): SuanpanRod {
+  return {
+    ...rod,
+    heaven: setBeadGroupActiveCount(rod.heaven, counts.heaven),
+    earth: setBeadGroupActiveCount(rod.earth, counts.earth),
+  };
+}
+
+function setBeadGroupActiveCount(
+  beads: readonly SuanpanBead[],
+  activeCount: number,
+): readonly SuanpanBead[] {
+  return beads.map((bead, index) => ({
+    ...bead,
+    isActive: index < activeCount,
   }));
 }
