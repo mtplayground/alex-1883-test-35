@@ -52,3 +52,9 @@ contents of `dist/` from any static host, preserving the generated `assets/`
 directory next to `index.html`. After deployment, run `npm run smoke:deploy`
 with `DEPLOYED_URL` or `SMOKE_BASE_URL` pointed at the deployed root. Deployment
 details are documented in `docs/deployment.md`.
+
+The current live Sprite investigation is documented in
+`docs/live-serving-contract.md`: the observed live service serves
+`/opt/app/public/index.html` through a leftover Node static server, while the
+Suanpan deployment contract requires publishing the Vite build entrypoint at
+`/opt/app/dist/index.html` with its generated assets.
