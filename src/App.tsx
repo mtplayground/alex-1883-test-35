@@ -32,9 +32,9 @@ function App() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-6 text-slate-900 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-100 px-3 py-4 text-slate-900 sm:px-6 sm:py-6 lg:px-8">
       <section
-        className="mx-auto flex w-full max-w-7xl flex-col gap-5"
+        className="mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-5"
         aria-labelledby="app-title"
       >
         <header className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
