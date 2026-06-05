@@ -1,14 +1,18 @@
 import { useState } from 'react';
 
 import { Abacus } from './components/Abacus';
+import { ValueReadout } from './components/ValueReadout';
 import { appConfig } from './config/env';
 import {
   type BeadSelection,
+  clearSuanpanState,
   createNeutralSuanpanState,
   EARTH_BEADS_PER_ROD,
   HEAVEN_BEADS_PER_ROD,
+  isNeutralSuanpanState,
   toggleBead,
 } from './model/suanpan';
+import { computeSuanpanValue } from './model/value';
 
 import './index.css';
 
@@ -16,9 +20,15 @@ function App() {
   const [suanpanState, setSuanpanState] = useState(() =>
     createNeutralSuanpanState(appConfig.defaultRodCount),
   );
+  const currentValue = computeSuanpanValue(suanpanState);
+  const isNeutral = isNeutralSuanpanState(suanpanState);
 
   function handleBeadSelect(selection: BeadSelection) {
     setSuanpanState((currentState) => toggleBead(currentState, selection));
+  }
+
+  function handleReset() {
+    setSuanpanState((currentState) => clearSuanpanState(currentState));
   }
 
   return (
@@ -41,6 +51,11 @@ function App() {
             {EARTH_BEADS_PER_ROD} earth
           </p>
         </header>
+        <ValueReadout
+          value={currentValue}
+          isNeutral={isNeutral}
+          onReset={handleReset}
+        />
         <Abacus state={suanpanState} onBeadSelect={handleBeadSelect} />
       </section>
     </main>
