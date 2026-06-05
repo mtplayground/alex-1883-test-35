@@ -14,7 +14,7 @@ export function Bead({ bead, onSelect }: BeadProps) {
 
   return (
     <button
-      className="absolute left-1/2 z-10 h-10 w-12 -translate-x-1/2 -translate-y-1/2 touch-manipulation rounded-full border border-amber-950/40 bg-gradient-to-b from-amber-500 via-amber-700 to-amber-950 shadow-md shadow-slate-950/25 transition-[top] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-amber-50"
+      className="absolute left-1/2 z-10 h-11 w-12 -translate-x-1/2 -translate-y-1/2 touch-manipulation rounded-full border border-amber-950/40 bg-gradient-to-b from-amber-500 via-amber-700 to-amber-950 shadow-md shadow-slate-950/25 transition-[top] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-amber-50"
       style={beadStyle}
       type="button"
       onClick={onSelect}
@@ -23,7 +23,7 @@ export function Bead({ bead, onSelect }: BeadProps) {
       aria-pressed={bead.isActive}
     >
       <span
-        className="absolute left-1/2 top-1/2 h-3 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-100/45"
+        className="absolute left-1/2 top-1/2 h-3 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-100/45"
         aria-hidden="true"
       />
     </button>

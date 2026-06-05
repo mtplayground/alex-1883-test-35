@@ -14,7 +14,7 @@ interface RodProps {
 export function Rod({ rod, onBeadSelect }: RodProps) {
   return (
     <div
-      className="relative grid h-[min(58vh,34rem)] min-h-[22rem] grid-rows-[2fr_1rem_5fr] border-l border-amber-950/20 last:border-r"
+      className="relative grid h-[clamp(24rem,62vh,38rem)] grid-rows-[2fr_1rem_5fr] border-l border-amber-950/20 last:border-r"
       aria-label={`Rod ${rod.index + 1}`}
     >
       <RodSegment

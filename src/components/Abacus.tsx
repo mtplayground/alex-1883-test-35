@@ -9,8 +9,10 @@ interface AbacusProps {
 }
 
 export function Abacus({ state, onBeadSelect }: AbacusProps) {
+  const rodMinWidthRem = 3.75;
   const rodGridStyle = {
-    gridTemplateColumns: `repeat(${state.rodCount}, minmax(2.75rem, 1fr))`,
+    gridTemplateColumns: `repeat(${state.rodCount}, minmax(${rodMinWidthRem}rem, 1fr))`,
+    minWidth: `${state.rodCount * rodMinWidthRem}rem`,
   } satisfies CSSProperties;
 
   return (
@@ -18,11 +20,11 @@ export function Abacus({ state, onBeadSelect }: AbacusProps) {
       className="w-full"
       aria-label={`Suanpan board with ${state.rodCount} rods`}
     >
-      <div className="border-y-[14px] border-amber-950 bg-amber-950 shadow-2xl shadow-slate-950/15">
-        <div className="border-x-[14px] border-amber-900 bg-amber-100">
-          <div className="relative overflow-x-auto bg-gradient-to-b from-amber-100 via-amber-50 to-amber-100">
+      <div className="border-y-8 border-amber-950 bg-amber-950 shadow-2xl shadow-slate-950/15 sm:border-y-[14px]">
+        <div className="border-x-8 border-amber-900 bg-amber-100 sm:border-x-[14px]">
+          <div className="relative touch-pan-x overflow-x-auto overscroll-x-contain bg-gradient-to-b from-amber-100 via-amber-50 to-amber-100 pb-2 [scrollbar-gutter:stable]">
             <div
-              className="grid min-w-max grid-rows-[2fr_1rem_5fr]"
+              className="grid w-full grid-rows-[2fr_1rem_5fr]"
               style={rodGridStyle}
             >
               {state.rods.map((rod) => (
