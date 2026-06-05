@@ -13,6 +13,25 @@ npm run build
 
 The generated site is written to `dist/`.
 
+## Release checklist
+
+Before any deploy issue is marked done, complete every item below:
+
+- Build the production bundle with `npm run build`.
+- Deploy the generated `dist/index.html` and `dist/assets/` files to the live
+  host.
+- Run `DEPLOYED_URL=<live-url> npm run smoke:deploy` against the exact URL a
+  user opens.
+- Have a maintainer load that same live URL in a browser and visually confirm
+  the Suanpan board renders with beads, rods, and the numeric readout.
+- Confirm the live URL is not a platform-owned page or route, including any page
+  branded as "myClawTeam".
+- Record the maintainer name, live URL, and confirmation time in the deploy
+  issue before closing it.
+
+The automated smoke check is required, but it is not sufficient on its own. A
+deploy issue may only be closed after the human visual confirmation is recorded.
+
 ## Verify locally
 
 Preview the production bundle on the same host and port used by the app:
@@ -40,7 +59,10 @@ or a platform-owned placeholder, and records the expected corrected mapping:
 the viewed URL must return `dist/index.html` with the generated `assets/`
 directory. The check fails if either response contains the old
 `DEPLOYMENT READY` / `Sprite service` placeholder text, or if the rendered page
-does not expose the Suanpan abacus board.
+does not expose the Suanpan abacus board. A passing smoke check prints the
+human verification gate reminder, but the deploy issue must remain open until a
+maintainer completes and records the visual confirmation from the release
+checklist.
 
 ## Host the bundle
 

@@ -172,6 +172,9 @@ async function main() {
   await assertRenderedAbacus(viewedUrl);
 
   console.log(`Deploy smoke check passed for viewed URL ${viewedUrl}`);
+  console.log(
+    'ISSUE_34_HUMAN_GATE required=true action="A maintainer must load the live URL and visually confirm Suanpan beads, rods, and readout before any deploy issue is closed."',
+  );
 }
 
 main().catch((error) => {
