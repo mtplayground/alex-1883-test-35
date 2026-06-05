@@ -2,8 +2,8 @@
 
 ## What It Is
 
-Suanpan is a browser-based Chinese abacus implemented as a static Vite + React
-+ TypeScript app. It renders an interactive suanpan board and computes the
+Suanpan is a browser-based Chinese abacus implemented as a static Vite, React,
+and TypeScript app. It renders an interactive suanpan board and computes the
 represented base-10 value as beads move.
 
 ## Current Capabilities
@@ -34,16 +34,21 @@ represented base-10 value as beads move.
 
 - Unit tests cover model behavior and value computation.
 - Playwright E2E coverage verifies bead interaction, readout updates, and reset.
+- A deploy smoke check verifies that the served root is the rendered Suanpan app
+  and fails if the old `DEPLOYMENT READY` / `Sprite service` placeholder is
+  present.
 - Standard validation commands are:
   - `npm run lint`
   - `npm test`
   - `npm run build`
   - `npm run format:check`
   - `npm run test:e2e`
+  - `DEPLOYED_URL=<url> npm run smoke:deploy`
 
 ## Deployment
 
 Suanpan is self-hostable as static assets. Run `npm run build` and serve the
 contents of `dist/` from any static host, preserving the generated `assets/`
-directory next to `index.html`. Deployment details are documented in
-`docs/deployment.md`.
+directory next to `index.html`. After deployment, run `npm run smoke:deploy`
+with `DEPLOYED_URL` or `SMOKE_BASE_URL` pointed at the deployed root. Deployment
+details are documented in `docs/deployment.md`.
