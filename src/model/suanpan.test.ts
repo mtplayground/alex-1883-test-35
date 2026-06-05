@@ -9,6 +9,7 @@ import {
   isNeutralRod,
   isNeutralSuanpanState,
   setRodBeadCounts,
+  toggleBead,
 } from './suanpan';
 import { getRodActiveBeadCounts } from './value';
 
@@ -96,5 +97,53 @@ describe('suanpan state model', () => {
     expect(() =>
       setRodBeadCounts(state, 0, { heaven: 0, earth: EARTH_BEADS_PER_ROD + 1 }),
     ).toThrow(RangeError);
+  });
+
+  it('toggles earth beads and neighboring beads toward and away from the bar', () => {
+    const activated = toggleBead(createNeutralSuanpanState(1), {
+      rodIndex: 0,
+      deck: 'earth',
+      beadIndex: 2,
+    });
+
+    expect(getRodActiveBeadCounts(activated.rods[0])).toEqual({
+      heaven: 0,
+      earth: 3,
+    });
+
+    const cleared = toggleBead(activated, {
+      rodIndex: 0,
+      deck: 'earth',
+      beadIndex: 1,
+    });
+
+    expect(getRodActiveBeadCounts(cleared.rods[0])).toEqual({
+      heaven: 0,
+      earth: 1,
+    });
+  });
+
+  it('toggles heaven beads and neighboring beads toward and away from the bar', () => {
+    const activated = toggleBead(createNeutralSuanpanState(1), {
+      rodIndex: 0,
+      deck: 'heaven',
+      beadIndex: 1,
+    });
+
+    expect(getRodActiveBeadCounts(activated.rods[0])).toEqual({
+      heaven: 2,
+      earth: 0,
+    });
+
+    const cleared = toggleBead(activated, {
+      rodIndex: 0,
+      deck: 'heaven',
+      beadIndex: 0,
+    });
+
+    expect(getRodActiveBeadCounts(cleared.rods[0])).toEqual({
+      heaven: 0,
+      earth: 0,
+    });
   });
 });

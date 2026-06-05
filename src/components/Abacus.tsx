@@ -1,13 +1,14 @@
 import type { CSSProperties } from 'react';
 
-import type { SuanpanState } from '../model/suanpan';
+import type { BeadSelection, SuanpanState } from '../model/suanpan';
 import { Rod } from './Rod';
 
 interface AbacusProps {
   readonly state: SuanpanState;
+  readonly onBeadSelect: (selection: BeadSelection) => void;
 }
 
-export function Abacus({ state }: AbacusProps) {
+export function Abacus({ state, onBeadSelect }: AbacusProps) {
   const rodGridStyle = {
     gridTemplateColumns: `repeat(${state.rodCount}, minmax(2.75rem, 1fr))`,
   } satisfies CSSProperties;
@@ -25,7 +26,7 @@ export function Abacus({ state }: AbacusProps) {
               style={rodGridStyle}
             >
               {state.rods.map((rod) => (
-                <Rod key={rod.id} rod={rod} />
+                <Rod key={rod.id} rod={rod} onBeadSelect={onBeadSelect} />
               ))}
             </div>
             <div
