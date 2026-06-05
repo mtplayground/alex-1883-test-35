@@ -1,15 +1,25 @@
+import { useState } from 'react';
+
 import { Abacus } from './components/Abacus';
 import { appConfig } from './config/env';
 import {
+  type BeadSelection,
   createNeutralSuanpanState,
   EARTH_BEADS_PER_ROD,
   HEAVEN_BEADS_PER_ROD,
+  toggleBead,
 } from './model/suanpan';
 
 import './index.css';
 
 function App() {
-  const suanpanState = createNeutralSuanpanState(appConfig.defaultRodCount);
+  const [suanpanState, setSuanpanState] = useState(() =>
+    createNeutralSuanpanState(appConfig.defaultRodCount),
+  );
+
+  function handleBeadSelect(selection: BeadSelection) {
+    setSuanpanState((currentState) => toggleBead(currentState, selection));
+  }
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-6 text-slate-900 sm:px-6 lg:px-8">
@@ -31,7 +41,7 @@ function App() {
             {EARTH_BEADS_PER_ROD} earth
           </p>
         </header>
-        <Abacus state={suanpanState} />
+        <Abacus state={suanpanState} onBeadSelect={handleBeadSelect} />
       </section>
     </main>
   );

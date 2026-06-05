@@ -30,6 +30,12 @@ export interface ActiveBeadCounts {
   readonly earth: number;
 }
 
+export interface BeadSelection {
+  readonly rodIndex: number;
+  readonly deck: BeadDeck;
+  readonly beadIndex: number;
+}
+
 export function validateRodCount(rodCount: number): number {
   if (!Number.isInteger(rodCount)) {
     throw new RangeError('Rod count must be an integer.');
@@ -95,6 +101,29 @@ export function clearSuanpanState(state: SuanpanState): SuanpanState {
   return createNeutralSuanpanState(state.rodCount);
 }
 
+export function toggleBead(
+  state: SuanpanState,
+  selection: BeadSelection,
+): SuanpanState {
+  const rod = getRod(state, selection.rodIndex);
+  const beads = selection.deck === 'heaven' ? rod.heaven : rod.earth;
+  const bead = beads[selection.beadIndex];
+
+  if (bead === undefined) {
+    throw new RangeError(`${selection.deck} bead index is out of range.`);
+  }
+
+  const counts = getRodActiveCounts(rod);
+  const nextDeckCount = bead.isActive
+    ? selection.beadIndex
+    : selection.beadIndex + 1;
+
+  return setRodBeadCounts(state, selection.rodIndex, {
+    ...counts,
+    [selection.deck]: nextDeckCount,
+  });
+}
+
 export function isNeutralRod(rod: SuanpanRod): boolean {
   return [...rod.heaven, ...rod.earth].every((bead) => !bead.isActive);
 }
@@ -128,6 +157,25 @@ function validateRodIndex(state: SuanpanState, rodIndex: number): number {
   }
 
   return rodIndex;
+}
+
+function getRod(state: SuanpanState, rodIndex: number): SuanpanRod {
+  validateRodIndex(state, rodIndex);
+
+  const rod = state.rods[rodIndex];
+
+  if (rod === undefined) {
+    throw new RangeError(`Rod ${rodIndex} was not found.`);
+  }
+
+  return rod;
+}
+
+function getRodActiveCounts(rod: SuanpanRod): ActiveBeadCounts {
+  return {
+    heaven: rod.heaven.filter((bead) => bead.isActive).length,
+    earth: rod.earth.filter((bead) => bead.isActive).length,
+  };
 }
 
 function validateActiveBeadCount(
