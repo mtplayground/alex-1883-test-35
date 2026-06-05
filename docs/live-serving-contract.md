@@ -29,7 +29,7 @@ const publicDir = join(root, 'public');
 For `GET /`, it serves:
 
 ```js
-join(publicDir, 'index.html')
+join(publicDir, 'index.html');
 ```
 
 Therefore the live served root entrypoint is:
@@ -76,3 +76,38 @@ The live `/opt/app` tree also has no `dist/` directory and no uploaded Suanpan
 source; its `package.json` only declares `start: node server.js`. This is a
 wrong publish target / leftover default app problem rather than a Suanpan
 runtime failure.
+
+## Corrected mapping
+
+Issue #33 rechecked the exact viewed URL:
+
+```text
+https://alex-1883-test-35-8c5fab-bp4af.sprites.app/
+```
+
+The raw response at that URL returned `200 OK` with Sprite/Fly headers and an
+HTML page loading `/app.js` plus `/styles.css`, which identifies it as a
+platform-owned page/route rather than the Suanpan Vite build. It did not serve
+the Suanpan `dist/index.html` entrypoint or generated `dist/assets/` files.
+
+The fix reconciles the exact viewed URL with the publish target by making the
+repository's production start command serve the Vite build output directly:
+
+```text
+npm start -> node scripts/static-server.mjs -> /opt/app/dist/index.html
+```
+
+The corrected host mapping is:
+
+- Exact viewed URL: the user-opened Sprite URL, including any path.
+- Publish target: `/` on the same origin unless deployment supplies
+  `PUBLISHED_URL` or `PUBLISHED_PATH`.
+- Served identity: Suanpan Vite build, detected by the `Suanpan` HTML title and
+  generated `/assets/*.js` entrypoint.
+- Corrected route: both the exact viewed URL and the publish target return
+  `dist/index.html`; generated files under `dist/assets/` are served next to it.
+
+`scripts/deploy-smoke.mjs` records each raw HTTP response as
+`ISSUE_33_RESPONSE` with status, headers, body, URL, and served identity, then
+prints `ISSUE_33_MAPPING` to document whether the exact viewed URL and publish
+target agree.

@@ -32,9 +32,15 @@ deployment healthy:
 DEPLOYED_URL=https://example.com npm run smoke:deploy
 ```
 
-The check fails if the served root contains the old `DEPLOYMENT READY` /
-`Sprite service` placeholder text, or if the rendered page does not expose the
-Suanpan abacus board.
+`DEPLOYED_URL` is the exact URL a user opens. The check also fetches the publish
+target, which defaults to `/` on the same origin and can be overridden with
+`PUBLISHED_URL` or `PUBLISHED_PATH`. It logs the raw status, headers, and body
+for both responses, classifies whether each response is the Suanpan Vite build
+or a platform-owned placeholder, and records the expected corrected mapping:
+the viewed URL must return `dist/index.html` with the generated `assets/`
+directory. The check fails if either response contains the old
+`DEPLOYMENT READY` / `Sprite service` placeholder text, or if the rendered page
+does not expose the Suanpan abacus board.
 
 ## Host the bundle
 
@@ -44,12 +50,14 @@ preserve the `assets/` directory next to `index.html`.
 Example static-server command:
 
 ```bash
-npx serve dist
+npm start
 ```
 
-Suanpan is a client-side app without server routes or a database. Hosts with
-single-page app fallback settings can route unknown paths to `index.html`,
-though the current app only requires the root path.
+`npm start` runs the repository's Node static server on `0.0.0.0:8080` by
+default, or on the `HOST` / `PORT` supplied by the host. It serves the generated
+`dist/index.html` for the root and client-side fallback paths, and serves
+`dist/assets/` as immutable static assets. Suanpan is a client-side app without
+server routes or a database.
 
 ## Configuration
 

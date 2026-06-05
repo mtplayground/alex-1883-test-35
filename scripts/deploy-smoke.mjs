@@ -1,8 +1,23 @@
 import { chromium } from 'playwright';
 
 const placeholderPatterns = [/DEPLOYMENT READY/i, /Sprite service/i];
+const suanpanPatterns = [
+  /<title>\s*Suanpan\s*<\/title>/i,
+  /\/assets\/[^"']+\.js/i,
+];
 
-function getBaseUrl() {
+function parseUrl(value, name) {
+  try {
+    return new URL(value).toString();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Invalid ${name} "${value}": ${message}`, {
+      cause: error,
+    });
+  }
+}
+
+function getTargetUrls() {
   const candidate = process.env.DEPLOYED_URL ?? process.env.SMOKE_BASE_URL;
 
   if (!candidate) {
@@ -11,14 +26,42 @@ function getBaseUrl() {
     );
   }
 
-  try {
-    return new URL('/', candidate).toString();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Invalid deployed app URL "${candidate}": ${message}`, {
-      cause: error,
-    });
+  const viewedUrl = parseUrl(candidate, 'deployed app URL');
+  const viewed = new URL(viewedUrl);
+  const publishedUrl =
+    process.env.PUBLISHED_URL ??
+    new URL(process.env.PUBLISHED_PATH ?? '/', viewed.origin).toString();
+
+  return {
+    publishedUrl: parseUrl(publishedUrl, 'published target URL'),
+    viewedUrl,
+  };
+}
+
+function headersToObject(headers) {
+  return Object.fromEntries(headers.entries());
+}
+
+function classifyServedIdentity(body, headers) {
+  const detectedPlaceholder = placeholderPatterns.find((pattern) =>
+    pattern.test(body),
+  );
+
+  if (detectedPlaceholder) {
+    return `platform-owned placeholder (${detectedPlaceholder})`;
   }
+
+  const looksLikeSuanpan = suanpanPatterns.every((pattern) =>
+    pattern.test(body),
+  );
+  if (looksLikeSuanpan) {
+    return 'suanpan-vite-build';
+  }
+
+  const looksPlatformOwned =
+    headers['sprite-version'] !== undefined ||
+    (body.includes('src="/app.js"') && body.includes('href="/styles.css"'));
+  return looksPlatformOwned ? 'platform-owned page/route' : 'unknown';
 }
 
 function assertNoPlaceholder(content, sourceName) {
@@ -33,27 +76,50 @@ function assertNoPlaceholder(content, sourceName) {
   }
 }
 
-async function fetchRootHtml(rootUrl) {
-  const response = await fetch(rootUrl, {
+function assertSuanpanIdentity(snapshot) {
+  if (snapshot.identity !== 'suanpan-vite-build') {
+    throw new Error(
+      `Deploy smoke check failed: ${snapshot.label} served ${snapshot.identity} instead of the Suanpan Vite build at ${snapshot.url}.`,
+    );
+  }
+}
+
+async function fetchRawHtml(url, label) {
+  const response = await fetch(url, {
     headers: {
       accept: 'text/html',
     },
   });
+  const body = await response.text();
+  const headers = headersToObject(response.headers);
+  const snapshot = {
+    body,
+    headers,
+    identity: classifyServedIdentity(body, headers),
+    label,
+    status: response.status,
+    statusText: response.statusText,
+    url,
+  };
+
+  console.log(
+    `ISSUE_33_RESPONSE label=${label} url=${url} status=${snapshot.status} identity=${JSON.stringify(snapshot.identity)} headers=${JSON.stringify(snapshot.headers)} body=${JSON.stringify(body)}`,
+  );
 
   if (!response.ok) {
     throw new Error(
-      `Deploy smoke check failed: GET ${rootUrl} returned ${response.status} ${response.statusText}.`,
+      `Deploy smoke check failed: GET ${url} returned ${response.status} ${response.statusText}.`,
     );
   }
 
   const contentType = response.headers.get('content-type') ?? '';
   if (!contentType.toLowerCase().includes('text/html')) {
     throw new Error(
-      `Deploy smoke check failed: GET ${rootUrl} returned "${contentType}" instead of HTML.`,
+      `Deploy smoke check failed: GET ${url} returned "${contentType}" instead of HTML.`,
     );
   }
 
-  return response.text();
+  return snapshot;
 }
 
 async function assertRenderedAbacus(rootUrl) {
@@ -88,13 +154,24 @@ async function assertRenderedAbacus(rootUrl) {
 }
 
 async function main() {
-  const rootUrl = getBaseUrl();
-  const rootHtml = await fetchRootHtml(rootUrl);
+  const { publishedUrl, viewedUrl } = getTargetUrls();
+  const viewed = await fetchRawHtml(viewedUrl, 'viewed-url');
+  const published =
+    publishedUrl === viewedUrl
+      ? viewed
+      : await fetchRawHtml(publishedUrl, 'published-target');
 
-  assertNoPlaceholder(rootHtml, 'served root HTML');
-  await assertRenderedAbacus(rootUrl);
+  console.log(
+    `ISSUE_33_MAPPING viewed_url=${viewedUrl} viewed_identity=${JSON.stringify(viewed.identity)} published_url=${publishedUrl} published_identity=${JSON.stringify(published.identity)} corrected_mapping=${JSON.stringify('viewed URL serves Suanpan dist/index.html with assets/')}`,
+  );
 
-  console.log(`Deploy smoke check passed for ${rootUrl}`);
+  assertNoPlaceholder(viewed.body, 'served viewed URL HTML');
+  assertNoPlaceholder(published.body, 'served published target HTML');
+  assertSuanpanIdentity(viewed);
+  assertSuanpanIdentity(published);
+  await assertRenderedAbacus(viewedUrl);
+
+  console.log(`Deploy smoke check passed for viewed URL ${viewedUrl}`);
 }
 
 main().catch((error) => {
