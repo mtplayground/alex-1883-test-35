@@ -1,3 +1,5 @@
+import { appConfig } from './config/env';
+
 import './index.css';
 
 function App() {
@@ -12,6 +14,9 @@ function App() {
         </h1>
         <p className="text-lg leading-8 text-slate-600">
           Interactive abacus app scaffold.
+        </p>
+        <p className="mt-4 text-sm font-medium text-slate-500">
+          Default rods: {appConfig.defaultRodCount}
         </p>
       </section>
     </main>
