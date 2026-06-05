@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { createNeutralSuanpanState, setRodBeadCounts } from './suanpan';
+import {
+  type SuanpanState,
+  createNeutralSuanpanState,
+  setRodBeadCounts,
+} from './suanpan';
 import { computeRodValue, computeSuanpanValue } from './value';
 
 describe('suanpan value computation', () => {
@@ -43,5 +47,29 @@ describe('suanpan value computation', () => {
         rodCount: 3,
       }),
     ).toThrow(RangeError);
+  });
+
+  it('rejects inconsistent bead state before computing values', () => {
+    const state = setRodBeadCounts(createNeutralSuanpanState(1), 0, {
+      heaven: 0,
+      earth: 2,
+    });
+    const malformed = {
+      ...state,
+      rods: [
+        {
+          ...state.rods[0],
+          earth: state.rods[0].earth.map((bead, index) => ({
+            ...bead,
+            isActive: index === 1,
+          })),
+        },
+      ],
+    };
+
+    expect(() => computeSuanpanValue(malformed as SuanpanState)).toThrow(
+      RangeError,
+    );
+    expect(() => computeRodValue(malformed.rods[0])).toThrow(RangeError);
   });
 });
