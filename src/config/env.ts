@@ -1,6 +1,9 @@
-const DEFAULT_ROD_COUNT = 13;
-const MIN_ROD_COUNT = 1;
-const MAX_ROD_COUNT = 21;
+import {
+  DEFAULT_ROD_COUNT,
+  MAX_ROD_COUNT,
+  MIN_ROD_COUNT,
+  validateRodCount,
+} from '../model/suanpan';
 
 function parseIntegerEnv(
   value: string | undefined,
@@ -21,21 +24,15 @@ function parseIntegerEnv(
 }
 
 function parseDefaultRodCount(value: string | undefined): number {
-  const rodCount = parseIntegerEnv(
-    value,
-    'VITE_DEFAULT_ROD_COUNT',
-    DEFAULT_ROD_COUNT,
+  return validateRodCount(
+    parseIntegerEnv(value, 'VITE_DEFAULT_ROD_COUNT', DEFAULT_ROD_COUNT),
   );
-
-  if (rodCount < MIN_ROD_COUNT || rodCount > MAX_ROD_COUNT) {
-    throw new Error(
-      `VITE_DEFAULT_ROD_COUNT must be between ${MIN_ROD_COUNT} and ${MAX_ROD_COUNT}.`,
-    );
-  }
-
-  return rodCount;
 }
 
 export const appConfig = Object.freeze({
   defaultRodCount: parseDefaultRodCount(import.meta.env.VITE_DEFAULT_ROD_COUNT),
+  rodCountRange: Object.freeze({
+    min: MIN_ROD_COUNT,
+    max: MAX_ROD_COUNT,
+  }),
 });
