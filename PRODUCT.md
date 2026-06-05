@@ -37,6 +37,9 @@ represented base-10 value as beads move.
 - A deploy smoke check verifies that the served root is the rendered Suanpan app
   and fails if the old `DEPLOYMENT READY` / `Sprite service` placeholder is
   present.
+- Deploy issue closure requires a maintainer to load the live URL and visually
+  confirm the Suanpan beads, rods, and readout are rendered; automated checks
+  alone are not sufficient.
 - Standard validation commands are:
   - `npm run lint`
   - `npm test`

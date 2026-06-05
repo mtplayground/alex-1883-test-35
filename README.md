@@ -19,3 +19,5 @@ npm run build
 
 The static production bundle is generated in `dist/`. See
 [docs/deployment.md](docs/deployment.md) for self-hosted deployment steps.
+Deploy issues must follow the release checklist in that document, including
+maintainer visual confirmation of the live Suanpan board before closure.
