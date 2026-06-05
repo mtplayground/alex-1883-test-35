@@ -1,0 +1,50 @@
+Architecture plan for the suanpan app
+
+Product scope
+- Build a static Vite + React + TypeScript app for an interactive suanpan abacus.
+- Model each rod as 2 heaven beads and 5 earth beads with a configurable rod count.
+- Keep core state transitions and value computation pure so UI, unit tests, and E2E tests share the same behavior.
+
+Module structure
+- `src/main.tsx`: React entry point.
+- `src/App.tsx`: top-level app composition, environment-derived default rod count, reset/readout wiring.
+- `src/config/env.ts`: parse and validate Vite env values such as `VITE_DEFAULT_ROD_COUNT`.
+- `src/model/suanpan.ts`: shared types, constants, state factories, rod validation, reset helpers, and bead interaction helpers.
+- `src/model/value.ts`: pure per-rod digit and full-board base-10 value computation.
+- `src/components/Abacus.tsx`: board shell composed from rods and model state.
+- `src/components/Rod.tsx`: per-rod frame, rod line, heaven/earth bead groups.
+- `src/components/Bead.tsx`: touch-friendly bead button with active/neutral positioning.
+- `src/components/ValueReadout.tsx`: computed value display and reset control.
+- `src/styles/index.css`: Tailwind base plus app-level layout styles.
+- `src/test/`: unit test setup and model/value tests.
+- `e2e/`: browser tests for bead interaction, readout, and reset.
+
+Shared types and state decisions
+- Represent board state as ordered rods from most significant to least significant digit for display and value computation.
+- A rod stores counts of active heaven beads and active earth beads, constrained to `0..2` and `0..5`.
+- Heaven beads contribute 5 each and earth beads contribute 1 each; a rod digit can therefore represent `0..15`, matching suanpan capability even if decimal readout may normally avoid values above 9.
+- Bead clicks set a contiguous active count for that bead group: clicking a neutral bead moves it and nearer neighbors toward the reckoning bar; clicking an active bead clears it and farther active neighbors away from the bar.
+- Validation should reject non-integer or out-of-range rod counts and normalize/guard inconsistent bead state at public helper boundaries.
+
+Issue dependency map
+- #1 establishes the Vite React TypeScript project structure.
+- #2 and #3 depend on #1 for styling/tooling and environment configuration.
+- #4 depends on #1 and creates the shared suanpan model contract.
+- #5 depends on #4 for value computation and state helpers.
+- #6 depends on #5 for model/value unit coverage.
+- #7 depends on #4 for static board rendering from model data.
+- #8 depends on #7 and #4 for bead rendering and active/neutral positioning.
+- #9 depends on #8 and #5 for interaction-driven state updates.
+- #10 depends on #5 and #9 for live computed readout and reset behavior.
+- #11 depends on #7-#10 for responsive board and touch target polish.
+- #12 depends on #3-#5 for env/model edge-case handling.
+- #13 depends on #9-#10 for browser interaction tests.
+- #14 depends on the complete app and test/build scripts for static hosting documentation.
+
+Key design decisions
+- Use Vite env variables only with the `VITE_` prefix and expose documented defaults in `.env.example`.
+- Keep all numeric logic outside React components; components should receive state, derived positions, and event callbacks.
+- Prefer CSS transforms for bead movement so the DOM structure remains stable for tests and accessibility.
+- Render beads as buttons with accessible labels and pointer-friendly minimum sizes.
+- Use Vitest for unit tests and Playwright for E2E once the app shell exists.
+- Production output should remain a static `dist/` build suitable for any self-hosted static server.
