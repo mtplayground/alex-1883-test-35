@@ -23,6 +23,19 @@ npm run preview
 
 Open `http://localhost:8080` to verify the static output.
 
+## Verify after deploy
+
+Run the deploy smoke check against the deployed root URL before marking a
+deployment healthy:
+
+```bash
+DEPLOYED_URL=https://example.com npm run smoke:deploy
+```
+
+The check fails if the served root contains the old `DEPLOYMENT READY` /
+`Sprite service` placeholder text, or if the rendered page does not expose the
+Suanpan abacus board.
+
 ## Host the bundle
 
 Upload the complete contents of `dist/` to a static host. The deployment must
