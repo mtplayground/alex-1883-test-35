@@ -1,3 +1,4 @@
+import { Abacus } from './components/Abacus';
 import { appConfig } from './config/env';
 import {
   createNeutralSuanpanState,
@@ -11,21 +12,26 @@ function App() {
   const suanpanState = createNeutralSuanpanState(appConfig.defaultRodCount);
 
   return (
-    <main className="grid min-h-screen place-items-center px-8 py-12">
-      <section className="w-full max-w-2xl" aria-labelledby="app-title">
-        <h1
-          id="app-title"
-          className="mb-3 text-5xl font-bold leading-none text-slate-900 sm:text-7xl"
-        >
-          Suanpan
-        </h1>
-        <p className="text-lg leading-8 text-slate-600">
-          Interactive abacus app scaffold.
-        </p>
-        <p className="mt-4 text-sm font-medium text-slate-500">
-          Neutral state: {suanpanState.rodCount} rods, {HEAVEN_BEADS_PER_ROD}{' '}
-          heaven beads and {EARTH_BEADS_PER_ROD} earth beads per rod.
-        </p>
+    <main className="min-h-screen bg-slate-100 px-4 py-6 text-slate-900 sm:px-6 lg:px-8">
+      <section
+        className="mx-auto flex w-full max-w-7xl flex-col gap-5"
+        aria-labelledby="app-title"
+      >
+        <header className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+          <div>
+            <h1
+              id="app-title"
+              className="text-4xl font-bold leading-none sm:text-6xl"
+            >
+              Suanpan
+            </h1>
+          </div>
+          <p className="text-sm font-medium text-slate-600">
+            {suanpanState.rodCount} rods · {HEAVEN_BEADS_PER_ROD} heaven /{' '}
+            {EARTH_BEADS_PER_ROD} earth
+          </p>
+        </header>
+        <Abacus state={suanpanState} />
       </section>
     </main>
   );
