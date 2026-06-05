@@ -24,9 +24,18 @@ function parseIntegerEnv(
 }
 
 function parseDefaultRodCount(value: string | undefined): number {
-  return validateRodCount(
-    parseIntegerEnv(value, 'VITE_DEFAULT_ROD_COUNT', DEFAULT_ROD_COUNT),
-  );
+  try {
+    return validateRodCount(
+      parseIntegerEnv(value, 'VITE_DEFAULT_ROD_COUNT', DEFAULT_ROD_COUNT),
+    );
+  } catch (error) {
+    throw new Error(
+      `Invalid VITE_DEFAULT_ROD_COUNT: ${getErrorMessage(error)}`,
+      {
+        cause: error,
+      },
+    );
+  }
 }
 
 export const appConfig = Object.freeze({
@@ -36,3 +45,7 @@ export const appConfig = Object.freeze({
     max: MAX_ROD_COUNT,
   }),
 });
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}

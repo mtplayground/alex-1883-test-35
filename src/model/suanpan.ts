@@ -50,6 +50,34 @@ export function validateRodCount(rodCount: number): number {
   return rodCount;
 }
 
+export function validateSuanpanState(state: SuanpanState): SuanpanState {
+  validateRodCount(state.rodCount);
+
+  if (state.rodCount !== state.rods.length) {
+    throw new RangeError(
+      'Suanpan state rod count must match the rods array length.',
+    );
+  }
+
+  state.rods.forEach((rod, index) => validateSuanpanRod(rod, index));
+
+  return state;
+}
+
+export function validateSuanpanRod(
+  rod: SuanpanRod,
+  expectedIndex = rod.index,
+): SuanpanRod {
+  if (rod.index !== expectedIndex) {
+    throw new RangeError(`Rod index must be ${expectedIndex}.`);
+  }
+
+  validateBeadGroup(rod.heaven, 'heaven', HEAVEN_BEADS_PER_ROD);
+  validateBeadGroup(rod.earth, 'earth', EARTH_BEADS_PER_ROD);
+
+  return rod;
+}
+
 export function createNeutralSuanpanState(
   rodCount = DEFAULT_ROD_COUNT,
 ): SuanpanState {
@@ -81,6 +109,7 @@ export function setRodBeadCounts(
   rodIndex: number,
   counts: ActiveBeadCounts,
 ): SuanpanState {
+  validateSuanpanState(state);
   validateRodIndex(state, rodIndex);
   validateActiveBeadCount(counts.heaven, 'heaven', HEAVEN_BEADS_PER_ROD);
   validateActiveBeadCount(counts.earth, 'earth', EARTH_BEADS_PER_ROD);
@@ -98,6 +127,8 @@ export function clearRod(state: SuanpanState, rodIndex: number): SuanpanState {
 }
 
 export function clearSuanpanState(state: SuanpanState): SuanpanState {
+  validateSuanpanState(state);
+
   return createNeutralSuanpanState(state.rodCount);
 }
 
@@ -105,6 +136,8 @@ export function toggleBead(
   state: SuanpanState,
   selection: BeadSelection,
 ): SuanpanState {
+  validateSuanpanState(state);
+
   const rod = getRod(state, selection.rodIndex);
   const beads = selection.deck === 'heaven' ? rod.heaven : rod.earth;
   const bead = beads[selection.beadIndex];
@@ -125,10 +158,14 @@ export function toggleBead(
 }
 
 export function isNeutralRod(rod: SuanpanRod): boolean {
+  validateSuanpanRod(rod);
+
   return [...rod.heaven, ...rod.earth].every((bead) => !bead.isActive);
 }
 
 export function isNeutralSuanpanState(state: SuanpanState): boolean {
+  validateSuanpanState(state);
+
   return state.rodCount === state.rods.length && state.rods.every(isNeutralRod);
 }
 
@@ -157,6 +194,44 @@ function validateRodIndex(state: SuanpanState, rodIndex: number): number {
   }
 
   return rodIndex;
+}
+
+function validateBeadGroup(
+  beads: readonly SuanpanBead[],
+  deck: BeadDeck,
+  expectedBeadCount: number,
+): void {
+  if (beads.length !== expectedBeadCount) {
+    throw new RangeError(`${deck} bead count must be ${expectedBeadCount}.`);
+  }
+
+  let sawInactiveBead = false;
+
+  beads.forEach((bead, index) => {
+    if (bead.deck !== deck) {
+      throw new RangeError(`${deck} bead ${index} has an invalid deck.`);
+    }
+
+    if (bead.index !== index) {
+      throw new RangeError(`${deck} bead index must be ${index}.`);
+    }
+
+    if (typeof bead.isActive !== 'boolean') {
+      throw new RangeError(
+        `${deck} bead ${index} active state must be boolean.`,
+      );
+    }
+
+    if (sawInactiveBead && bead.isActive) {
+      throw new RangeError(
+        `${deck} active beads must be contiguous from the bar.`,
+      );
+    }
+
+    if (!bead.isActive) {
+      sawInactiveBead = true;
+    }
+  });
 }
 
 function getRod(state: SuanpanState, rodIndex: number): SuanpanRod {

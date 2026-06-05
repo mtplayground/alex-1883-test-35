@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  type SuanpanState,
   clearRod,
   clearSuanpanState,
   createNeutralSuanpanState,
@@ -10,6 +11,7 @@ import {
   isNeutralSuanpanState,
   setRodBeadCounts,
   toggleBead,
+  validateSuanpanState,
 } from './suanpan';
 import { getRodActiveBeadCounts } from './value';
 
@@ -97,6 +99,69 @@ describe('suanpan state model', () => {
     expect(() =>
       setRodBeadCounts(state, 0, { heaven: 0, earth: EARTH_BEADS_PER_ROD + 1 }),
     ).toThrow(RangeError);
+  });
+
+  it('rejects invalid rod counts', () => {
+    expect(() => createNeutralSuanpanState(0)).toThrow(RangeError);
+    expect(() => createNeutralSuanpanState(22)).toThrow(RangeError);
+    expect(() => createNeutralSuanpanState(1.5)).toThrow(RangeError);
+  });
+
+  it('rejects states with inconsistent bead group sizes', () => {
+    const state = createNeutralSuanpanState(1);
+    const malformed = {
+      ...state,
+      rods: [
+        {
+          ...state.rods[0],
+          earth: state.rods[0].earth.slice(1),
+        },
+      ],
+    };
+
+    expect(() => validateSuanpanState(malformed as SuanpanState)).toThrow(
+      RangeError,
+    );
+  });
+
+  it('rejects non-contiguous active bead state', () => {
+    const state = createNeutralSuanpanState(1);
+    const malformed = {
+      ...state,
+      rods: [
+        {
+          ...state.rods[0],
+          earth: state.rods[0].earth.map((bead, index) => ({
+            ...bead,
+            isActive: index === 1,
+          })),
+        },
+      ],
+    };
+
+    expect(() => validateSuanpanState(malformed as SuanpanState)).toThrow(
+      RangeError,
+    );
+  });
+
+  it('rejects bead metadata that does not match its group', () => {
+    const state = createNeutralSuanpanState(1);
+    const malformed = {
+      ...state,
+      rods: [
+        {
+          ...state.rods[0],
+          heaven: state.rods[0].heaven.map((bead, index) => ({
+            ...bead,
+            deck: index === 0 ? 'earth' : bead.deck,
+          })),
+        },
+      ],
+    };
+
+    expect(() => validateSuanpanState(malformed as SuanpanState)).toThrow(
+      RangeError,
+    );
   });
 
   it('toggles earth beads and neighboring beads toward and away from the bar', () => {
